@@ -17,5 +17,7 @@ int construire_clef(char* pwd, unsigned int pwd_sz, unsigned char* key, unsigned
         printf("%02x", key[i]);
     }
     printf("\n");
+
+    mbedtls_sha256_free(&sha256);
     return 0;
 }
