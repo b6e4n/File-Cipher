@@ -1,0 +1,39 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug protect",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/me/dg/v1/protect", // Le chemin vers votre programme "protect"
+            "args": [], // Les arguments de ligne de commande si nécessaire
+            "stopAtEntry": false,
+            "cwd": "/home/me/dg/v1", // Le répertoire de travail de votre programme
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build", // Vous pouvez spécifier ici une tâche de build si nécessaire
+            "miDebuggerPath": "/usr/bin/gdb", // Le chemin vers votre exécutable GDB si nécessaire
+            "programPath": "/home/me/dg/v1/protect", // Le chemin vers votre programme "protect" (peut être identique à "program" ici)
+            "linux": {
+                "MIMode": "gdb"
+            },
+            "osx": {
+                "MIMode": "lldb"
+            },
+            "windows": {
+                "MIMode": "gdb"
+            }
+        }
+    ]
+}

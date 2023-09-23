@@ -21,7 +21,7 @@ int generer_iv(unsigned char* iv, unsigned int sz){
 
     // Print the IV in hexadecimal format
     printf("IV: ");
-    for (int i = 0; i < sizeof(iv); i++) {
+    for (int i = 0; i < sz; i++) {
         printf("%02x", iv[i]);
     }
     printf("\n");
@@ -30,7 +30,6 @@ int generer_iv(unsigned char* iv, unsigned int sz){
 
     mbedtls_ctr_drbg_free(&ctr_drbg);
     mbedtls_entropy_free(&entropy);
-
     return 0;
 
 }
