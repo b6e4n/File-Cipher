@@ -28,7 +28,7 @@ variables
     generer_iv(iv, iv_sz);
     printf("len pwd: %i\n", strlen(pwd));
     construire_clef(pwd,strlen(pwd), key, &k_sz);
-    printf("New value of k_sz = %i\n", k_sz);
+    printf("New value of k_sz = %i\ng", k_sz);
     /*
     printf("CLEF: ");
     for (int i = 0; i < k_sz ; i++) {
