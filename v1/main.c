@@ -4,6 +4,7 @@
 #include "chiffre.h"
 
 #include <string.h>
+#include <stdio.h>
 
 int main() {
     
@@ -25,41 +26,39 @@ variables
 
 
     generer_iv(iv, iv_sz);
-    printf("IV: ");
-    for (int i = 0; i < iv_sz; i++) {
-        printf("%02x", iv[i]);
-    }
-    printf("iv_sz: %i\n",iv_sz);
-    printf("k_sz: %i\n", k_sz);
-    printf("&k_sz: %i\n", &k_sz);
+    printf("len pwd: %i\n", strlen(pwd));
     construire_clef(pwd,strlen(pwd), key, &k_sz);
+    printf("New value of k_sz = %i\n", k_sz);
+    /*
     printf("CLEF: ");
     for (int i = 0; i < k_sz ; i++) {
         printf("%02x", key[i]);
     }
     printf("\n");
-    
+    */
 
     //initialisation crypto
     cry = creer_ctx_cry();
     
     preparer_ctx_cry(cry,key, k_sz, iv, iv_sz);
-    unsigned char * message = "bonjour";
+    const char * message = "bonjour";
     c_sz = strlen(message);
     printf("C_SZ : %i\n", c_sz);
 
     //operation crypto
-    buffer_crypto = (unsigned char*) malloc(c_sz);
+    buffer_crypto = (unsigned char*) malloc(c_sz+1);
    
-    buffer_plain = (unsigned char*) malloc(c_sz);
+    buffer_plain = (unsigned char*) malloc(c_sz+1);
     
     memcpy(buffer_plain, message, c_sz);
     buffer_plain[c_sz] = '\0';
-    printf("BUFFERPLAIN: %s", buffer_plain);
+    printf("BUFFERPLAIN: %s\n", buffer_plain);
 
 
     chiffrer_all_data(cry,buffer_plain,c_sz,buffer_crypto,c_sz);
-    dechiffrer_all_data(cry,buffer_plain, c_sz,buffer_crypto,c_sz);
+    //dechiffrer_all_data(cry,buffer_plain, c_sz,buffer_crypto,c_sz);
+
+    detruire_ctx_cry(cry);
 
     return 0;
 }
