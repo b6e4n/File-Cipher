@@ -41,7 +41,13 @@ la fonction retourne un code d’erreur et *buffer_crypto_sz vaut 0
 */
 
 int chiffrer_all_data(contexte_cry* ctx_cry, unsigned char* buffer_plain, unsigned int buffer_plain_sz, unsigned char* buffer_crypto, unsigned int* buffer_crypto_sz){
-    
+    unsigned char * key = ctx_cry->key;
+    unsigned char * iv = ctx_cry->iv;
+    unsigned int k_sz = ctx_cry->key_sz;
+    unsigned int iv_sz = ctx_cry->iv_sz;
+
+    unsigned char input [128];
+    unsigned char output[128];
     
     return 0;
 }

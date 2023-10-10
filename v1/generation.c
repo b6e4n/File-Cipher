@@ -19,13 +19,6 @@ int generer_iv(unsigned char* iv, unsigned int sz){
 
     mbedtls_ctr_drbg_random(&ctr_drbg, iv, sz);
 
-    // Print the IV in hexadecimal format
-    printf("IV: ");
-    for (int i = 0; i < sz; i++) {
-        printf("%02x", iv[i]);
-    }
-    printf("\n");
-
     // Use 'iv' for AES-CBC encryption
 
     mbedtls_ctr_drbg_free(&ctr_drbg);

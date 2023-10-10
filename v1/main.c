@@ -2,9 +2,15 @@
 #include "generation.h"
 #include "clef.h"
 #include "chiffre.h"
+#include "io.h"
 
 #include <string.h>
 #include <stdio.h>
+
+#define LECTURE 0x01
+#define ECRITURE 0x02
+#define CRYPTO 0x04
+#define PLAIN 0x08
 
 int main() {
     
@@ -21,44 +27,47 @@ variables
     unsigned char* buffer_crypto = NULL;
     unsigned int c_sz = 0;
     //contexte_io* io_crypto = NULL;
-    //contexte_io* io_plain = NULL;
+    contexte_io* io_plain = NULL;
     contexte_cry* cry = NULL;
 
+    //Chiffrement d'un texte clair
+    io_plain = creer_ctx_io();
+    preparer_ctx_io(io_plain, "fichier_clair", ECRITURE|PLAIN);
 
+    //Génération d'un IV
     generer_iv(iv, iv_sz);
-    printf("len pwd: %i\n", strlen(pwd));
+
+    //Génération de la clé depuis le mot de passe pwd
     construire_clef(pwd,strlen(pwd), key, &k_sz);
-    printf("New value of k_sz = %i\ng", k_sz);
-    /*
-    printf("CLEF: ");
+    
+    //initialisation crypto
+    cry = creer_ctx_cry();
+    
+    //preparation du contexte crypto
+    preparer_ctx_cry(cry,key, k_sz, iv, iv_sz);
+
+
+    printf("k_sz = %i\n", k_sz);
+    printf("KEY: ");
     for (int i = 0; i < k_sz ; i++) {
         printf("%02x", key[i]);
     }
     printf("\n");
-    */
-
-    //initialisation crypto
-    cry = creer_ctx_cry();
+    printf("iv_sz = %i\n", iv_sz);
+    printf("IV: ");
+    for (int i = 0; i < iv_sz ; i++) {
+        printf("%02x", iv[i]);
+    }
+    printf("\n");
     
-    preparer_ctx_cry(cry,key, k_sz, iv, iv_sz);
-    const char * message = "bonjour";
-    c_sz = strlen(message);
-    printf("C_SZ : %i\n", c_sz);
+    buffer_plain = malloc(sizeof(unsigned char)*1000);
+    lire_all_data(io_plain, buffer_plain, 1000);
+    printf("buffer plain : %s\n", buffer_plain);
 
-    //operation crypto
-    buffer_crypto = (unsigned char*) malloc(c_sz+1);
-   
-    buffer_plain = (unsigned char*) malloc(c_sz+1);
-    
-    memcpy(buffer_plain, message, c_sz);
-    buffer_plain[c_sz] = '\0';
-    printf("BUFFERPLAIN: %s\n", buffer_plain);
-
-
-    chiffrer_all_data(cry,buffer_plain,c_sz,buffer_crypto,c_sz);
-    //dechiffrer_all_data(cry,buffer_plain, c_sz,buffer_crypto,c_sz);
-
+    // --> chiffrer les datas contenues dans buffer_plain
+    // --> ecrire le iv + le chiffré dans un fichier fichier.bin
     detruire_ctx_cry(cry);
+    detruire_ctx_io(io_plain);
 
     return 0;
 }

@@ -1,14 +1,13 @@
 CC = gcc
 CFLAGS = -Wall -O2
 
-# Add the path to mbedtls include and library directories
 MBEDTLS_INC = .
 MBEDTLS_LIB = library
 
 all: protect
 
-protect: main.o generation.o clef.o chiffre.o
-	$(CC) $(CFLAGS) -o protect main.o generation.o clef.o chiffre.o -L$(MBEDTLS_LIB) -lmbedtls -lmbedcrypto -lmbedx509
+protect: main.o generation.o clef.o chiffre.o io.o
+	$(CC) $(CFLAGS) -o protect main.o generation.o clef.o chiffre.o io.o -L$(MBEDTLS_LIB) -lmbedtls -lmbedcrypto -lmbedx509
 
 main.o: main.c
 	$(CC) $(CFLAGS) -I$(MBEDTLS_INC) -c main.c 
@@ -21,6 +20,9 @@ clef.o: clef.c
 
 chiffre.o: chiffre.c
 	$(CC) $(CFLAGS) -I$(MBEDTLS_INC) -c chiffre.c
+
+io.o: io.c
+	$(CC) $(CFLAGS) -I$(MBEDTLS_INC) -c io.c
 
 clean:
 	rm -f protect *.o
