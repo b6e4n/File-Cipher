@@ -48,7 +48,12 @@ int chiffrer_all_data(contexte_cry* ctx_cry, unsigned char* buffer_plain, unsign
 
     unsigned char input [128];
     unsigned char output[128];
-    
+
+    /*
+    --> gestion du pading à gérer, AES CBC chiffre par bloc de 16 bytes, dans l'énoncé il est marqué que le pading se fait à 0x80 = 128
+    --> Dans l'exemple mbedtls, le padding est fait à 48
+    --> il va falloir ajouter 0x80 et des 0 à la fin pour avoir une tailler de 128
+    */
     return 0;
 }
 
