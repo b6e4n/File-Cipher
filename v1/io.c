@@ -40,3 +40,26 @@ int lire_all_data(contexte_io* ctx_io, unsigned char* buffer, unsigned int sz){
     fclose(fichier);
     return 0;
 }
+
+
+unsigned int data_size(contexte_io* ctx_io){
+    FILE* fp = fopen(ctx_io->filename, "r"); 
+  
+    // checking if the file exist or not 
+    if (fp == NULL) { 
+        printf("File Not Found!\n"); 
+        return -1; 
+    } 
+  
+    fseek(fp, 0L, SEEK_END); 
+  
+    // calculating the size of the file 
+    long int res = ftell(fp); 
+  
+    // closing the file 
+    fclose(fp); 
+    
+    printf("Size of the file : %i\n", res);
+    return res; 
+
+}

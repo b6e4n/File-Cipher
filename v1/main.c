@@ -23,10 +23,10 @@ variables
     unsigned int k_sz = 32;
     char pwd[80] = "MOTDEPASSE";
     unsigned char* buffer_plain = NULL;
-    //unsigned int p_sz = 0;
+    unsigned int p_sz = 0;
     unsigned char* buffer_crypto = NULL;
-    unsigned int c_sz = 0;
-    //contexte_io* io_crypto = NULL;
+    unsigned int c_sz = 0x80;
+    contexte_io* io_crypto = NULL;
     contexte_io* io_plain = NULL;
     contexte_cry* cry = NULL;
 
@@ -60,11 +60,18 @@ variables
     }
     printf("\n");
     
-    buffer_plain = malloc(sizeof(unsigned char)*1000);
-    lire_all_data(io_plain, buffer_plain, 1000);
+    p_sz = data_size(io_plain);
+
+    buffer_crypto = (unsigned char*) malloc(c_sz);
+    buffer_plain = (unsigned char*) malloc(p_sz);
+
+    lire_all_data(io_plain, buffer_plain, c_sz+1);
     printf("buffer plain : %s\n", buffer_plain);
 
+    
     // --> chiffrer les datas contenues dans buffer_plain
+    chiffrer_all_data(cry, buffer_plain, p_sz, buffer_crypto, c_sz);
+    //dechiffrer_all_data(cry,buffer_plain, c_sz, buffer_crypto, c_sz);
     // --> ecrire le iv + le chiffré dans un fichier fichier.bin
     detruire_ctx_cry(cry);
     detruire_ctx_io(io_plain);
