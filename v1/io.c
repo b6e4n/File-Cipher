@@ -87,11 +87,27 @@ int ecrire_iv(contexte_io* ctx_io, unsigned char* iv, unsigned int iv_sz){
     FILE *stream = fopen(ctx_io->filename, "w");
     if (stream != NULL){
         int numwrite = fwrite(iv, sizeof(char), iv_sz, stream);
-        printf( "Number of items read = %d\n", numwrite );
+        printf( "Number of items written = %d\n", numwrite );
         printf( "Contents of buffer = %.25s\n", iv );
         fclose( stream );
     } else {
         printf( "File could not be opened\n" );
     }
 
+}
+
+
+int ecrire_all_data(contexte_io* ctx_io, unsigned char* buffer, unsigned int sz){
+    FILE *stream = fopen(ctx_io->filename, "w");
+    if (stream != NULL){
+        fseek(stream, 15, SEEK_SET);
+        int numwrite = fwrite(buffer, sizeof(char), sz, stream);
+        printf( "Number of items written = %d\n", numwrite );
+        printf( "Contents of buffer = %.25s\n", buffer );
+        fclose(stream);
+    } else {
+        printf( "File could not be opened\n" );
+    }
+
+    return 0;
 }

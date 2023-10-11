@@ -6,13 +6,63 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <getopt.h>
 
 #define LECTURE 0x01
 #define ECRITURE 0x02
 #define CRYPTO 0x04
 #define PLAIN 0x08
 
-int main() {
+
+void print_usage(){
+    printf("Usage : protect [option]\n");
+    printf("    -c mode chiffrement\n");
+    printf("    -d mode déchiffrement\n");
+    printf("    -p <mot de passe> mot de passe à utiliser\n");
+    printf("    -i <fichier> fichier d’entrée\n");
+    printf("    -o <fichier> fichier de sortie\n");
+    printf("    -h affiche cette aide\n");
+}
+
+int main(int argc, char *argv[]) {
+    //print_usage(); //https://linuxprograms.wordpress.com/2012/06/22/c-getopt_long-example-accessing-command-line-arguments/
+
+    int opt= 0;
+    int chiffrement = -1, dechiffrement = -1, password = -1, input =-1, output =-1;
+
+    //Specifying the expected options
+    //The two options l and b expect numbers as argument
+    static struct option long_options[] = {
+        {"chiffrement",      no_argument,       0,  'c' },
+        {"dechiffrement", no_argument,       0,  'd' },
+        {"password",    required_argument, 0,  'p' },
+        {"input",   required_argument, 0,  'i' },
+        {"output",   required_argument, 0,  'o' },
+        {0,           0,                 0,  0   }
+    };
+
+    int long_index =0;
+    while ((opt = getopt_long(argc, argv,"cdp:i:o:", 
+                   long_options, &long_index )) != -1) {
+        switch (opt) {
+             case 'c' : chiffrement = 0;
+                 break;
+             case 'd' : dechiffrement = 0;
+                 break;
+             case 'p' : password = atoi(optarg); 
+                 break;
+             case 'i' : input = atoi(optarg);
+                 break;
+             case 'o' : output = atoi(optarg);
+                 break;
+             default: print_usage(); 
+                 exit(EXIT_FAILURE);
+        }
+    }
+    if (password == -1 || input ==-1 || output ==-1) {
+        print_usage();
+        exit(EXIT_FAILURE);
+    }
     
 /*
 variables
