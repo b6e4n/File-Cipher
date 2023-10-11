@@ -63,3 +63,35 @@ unsigned int data_size(contexte_io* ctx_io){
     return res; 
 
 }
+
+
+int lire_iv(contexte_io* ctx_io, unsigned char* iv, unsigned int* iv_sz){
+
+    FILE *stream = fopen(ctx_io->filename, "r" );
+    if(  stream != NULL ){
+      // Attempt to read in 25 characters
+      int numread = fread( iv, sizeof( char ), iv_sz, stream );
+      printf( "Number of items read = %d\n", numread );
+      printf( "Contents of buffer = %.25s\n", iv );
+      fclose( stream );
+   }
+   else{
+      printf( "File could not be opened\n" );
+
+   }
+      
+}
+
+
+int ecrire_iv(contexte_io* ctx_io, unsigned char* iv, unsigned int iv_sz){
+    FILE *stream = fopen(ctx_io->filename, "w");
+    if (stream != NULL){
+        int numwrite = fwrite(iv, sizeof(char), iv_sz, stream);
+        printf( "Number of items read = %d\n", numwrite );
+        printf( "Contents of buffer = %.25s\n", iv );
+        fclose( stream );
+    } else {
+        printf( "File could not be opened\n" );
+    }
+
+}
