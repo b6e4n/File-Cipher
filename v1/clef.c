@@ -12,11 +12,6 @@ int construire_clef(char* pwd, unsigned int pwd_sz, unsigned char* key, unsigned
     mbedtls_sha256_free(&sha256);
     int written = sizeof(key)*4;
     k_sz = &written;
-    printf("value stored in k_sz = %i\n", *k_sz);
-    printf("CLEF: ");
-    for (int i = 0; i < *k_sz ; i++) {
-        printf("%02x", key[i]);
-    }
-    printf("\n");
+    
     return *k_sz;
 }

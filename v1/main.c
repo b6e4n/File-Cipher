@@ -27,51 +27,14 @@ void print_usage(){
 int main(int argc, char *argv[]) {
     //print_usage(); //https://linuxprograms.wordpress.com/2012/06/22/c-getopt_long-example-accessing-command-line-arguments/
 
-    int opt= 0;
-    int chiffrement = -1, dechiffrement = -1, password = -1, input =-1, output =-1;
-
-    //Specifying the expected options
-    //The two options l and b expect numbers as argument
-    static struct option long_options[] = {
-        {"chiffrement",      no_argument,       0,  'c' },
-        {"dechiffrement", no_argument,       0,  'd' },
-        {"password",    required_argument, 0,  'p' },
-        {"input",   required_argument, 0,  'i' },
-        {"output",   required_argument, 0,  'o' },
-        {0,           0,                 0,  0   }
-    };
-
-    int long_index =0;
-    while ((opt = getopt_long(argc, argv,"cdp:i:o:", 
-                   long_options, &long_index )) != -1) {
-        switch (opt) {
-             case 'c' : chiffrement = 0;
-                 break;
-             case 'd' : dechiffrement = 0;
-                 break;
-             case 'p' : password = atoi(optarg); 
-                 break;
-             case 'i' : input = atoi(optarg);
-                 break;
-             case 'o' : output = atoi(optarg);
-                 break;
-             default: print_usage(); 
-                 exit(EXIT_FAILURE);
-        }
-    }
-    if (password == -1 || input ==-1 || output ==-1) {
-        print_usage();
-        exit(EXIT_FAILURE);
-    }
-    
-/*
+    /*
 variables
 */
     unsigned char iv[16];
     unsigned int iv_sz = 16;
     unsigned char key[32];
     unsigned int k_sz = 32;
-    char pwd[80] = "MOTDEPASSE";
+    char* pwd = NULL;
     unsigned char* buffer_plain = NULL;
     unsigned int p_sz = 0;
     unsigned char* buffer_crypto = NULL;
@@ -80,6 +43,95 @@ variables
     contexte_io* io_plain = NULL;
     contexte_cry* cry = NULL;
 
+    int opt= 0;
+    int chiffrement = -1, dechiffrement = -1;
+    char *password = NULL, *input = NULL, *output = NULL;
+
+    while ((opt = getopt(argc, argv,"cdp:i:o:")) != -1) {
+        switch (opt) {
+             case 'c' : chiffrement = 0;
+                 break;
+             case 'd' : dechiffrement = 0;
+                 break;
+             case 'p' : password = optarg; 
+                 break;
+             case 'i' : input = optarg;
+                 break;
+             case 'o' : output = optarg;
+                 break;
+             default: print_usage(); 
+                 exit(EXIT_FAILURE);
+        }
+    }
+    if (password == NULL || input == NULL || output ==NULL) {
+        print_usage();
+        exit(EXIT_FAILURE);
+    }
+    
+
+    if(chiffrement == 0 && dechiffrement == -1){
+        
+        printf("chiffrement :%i\n", chiffrement);
+        printf("dechiffrement :%i\n", dechiffrement);
+        printf("pass :%s\n", password);
+        printf("input :%s\n", input);
+        printf("output :%s\n", output);
+
+        io_plain = creer_ctx_io();
+        preparer_ctx_io(io_plain, input, LECTURE|PLAIN);
+        printf("filename plain : %s\n", io_plain->filename);
+        printf("flag plain : %i\n", io_plain->flag);
+
+        generer_iv(iv, iv_sz);
+        printf("IV: ");
+        for (int i = 0; i < iv_sz ; i++) {
+            printf("%02x", iv[i]);
+        }
+        printf("\n");
+
+        construire_clef(password, strlen(password), key, &k_sz);
+        printf("key size : %i\n", k_sz);
+        printf("KEY: ");
+        for (int i = 0; i < k_sz ; i++) {
+            printf("%02x", key[i]);
+        }
+        printf("\n");
+
+        cry = creer_ctx_cry();
+        preparer_ctx_cry(cry, key, k_sz, iv, iv_sz);
+        printf("CRY key size : %i\n",cry->key_sz);
+        printf("CRY KEY: ");
+        for (int i = 0; i < cry->key_sz ; i++) {
+            printf("%02x", cry->key[i]);
+        }
+        printf("\n");
+        printf("CRY iv size : %i\n", cry->iv_sz);
+        printf("CRY IV: ");
+        for (int i = 0; i < cry->iv_sz ; i++) {
+            printf("%02x", cry->iv[i]);
+        }
+        printf("\n");
+
+        io_crypto = creer_ctx_io();
+        preparer_ctx_io(io_crypto, output, ECRITURE|CRYPTO);
+        printf("filename crypto : %s\n", io_crypto->filename);
+        printf("flag crypto : %i\n", io_crypto->flag);
+
+        p_sz = data_size(io_plain);
+        printf("size of the plain file : %i\n", p_sz);
+
+        buffer_plain = (unsigned char*) malloc(p_sz);
+        buffer_crypto = (unsigned char*) malloc(p_sz);
+
+        lire_all_data(io_plain, buffer_plain, p_sz);
+        printf("buffer plain : %s\n", buffer_plain);
+
+
+        
+    }
+        
+
+    /*
     //Chiffrement d'un texte clair
     io_plain = creer_ctx_io();
     preparer_ctx_io(io_plain, "fichier_clair", ECRITURE|PLAIN);
@@ -125,6 +177,8 @@ variables
     // --> ecrire le iv + le chiffré dans un fichier fichier.bin
     detruire_ctx_cry(cry);
     detruire_ctx_io(io_plain);
+
+    */
 
     return 0;
 }
