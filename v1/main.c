@@ -226,6 +226,8 @@ variables
         buffer_plain = (unsigned char*) malloc(c_sz);
 
 //lire all data et proceder au dechiffrement maintenant
+        lire_all_data(io_crypto, buffer_crypto, c_sz);
+        
 
         detruire_ctx_cry(cry);
         detruire_ctx_io(io_crypto);

@@ -46,9 +46,9 @@ int chiffrer_all_data(contexte_cry* ctx_cry, unsigned char* buffer_plain, unsign
     unsigned int k_sz = ctx_cry->key_sz;
     unsigned int iv_sz = ctx_cry->iv_sz;
 
-    unsigned char input [128];
-    unsigned char output[128];
+    size_t buffer_size = sizeof(buffer_plain);
 
+    printf("Size of the buffer_plain just before encryption in bytes: %zu\n", buffer_size);
     /*
     --> gestion du pading à gérer, AES CBC chiffre par bloc de 16 bytes, dans l'énoncé il est marqué que le pading se fait à 0x80 = 128
     --> Dans l'exemple mbedtls, le padding est fait à 48
@@ -63,6 +63,9 @@ int chiffrer_all_data(contexte_cry* ctx_cry, unsigned char* buffer_plain, unsign
     memcpy(padded_buffer, buffer_plain, buffer_plain_sz);
     memset(padded_buffer + buffer_plain_sz, 0x80, 0x80 - buffer_plain_sz);
     memset(padded_buffer + buffer_plain_sz + 1, 0, 0x80 - buffer_plain_sz - 1);
+    size_t buffer_size_2 = sizeof(padded_buffer);
+
+    printf("Size of the buffer_padded just before encryption in bytes: %zu\n", buffer_size_2);
     
     printf("PADDED BUFFER CLAIR: ");
     for (int i = 0; i < 128 ; i++) {
@@ -70,10 +73,16 @@ int chiffrer_all_data(contexte_cry* ctx_cry, unsigned char* buffer_plain, unsign
     }
     printf("\n");
     printf("longueur padded %i\n", strlen(padded_buffer));
+     printf("PADDED: ");
+    for (int j = 0; j < 128 ; j++) {
+        printf("%c", padded_buffer[j]);
+    }
+    printf("\n");
+    printf("\n");
     mbedtls_aes_context aes;
     mbedtls_aes_setkey_enc( &aes, key, 256 );
     mbedtls_aes_crypt_cbc( &aes, MBEDTLS_AES_ENCRYPT, 0x80, iv, padded_buffer, buffer_crypto );
-    buffer_plain = padded_buffer;
+    //buffer_plain = padded_buffer;
 
     printf("CHIFFRE: ");
     for (int i = 0; i < 128 ; i++) {
