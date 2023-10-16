@@ -3,9 +3,7 @@
 #include <stdio.h>
 
 contexte_io* creer_ctx_io(){
-    printf("Create context IO\n");
     contexte_io * io_crypto = malloc(sizeof(contexte_io));
-    printf("Context IO created\n");
     return io_crypto;
 }
 
@@ -32,7 +30,6 @@ int lire_all_data(contexte_io* ctx_io, unsigned char* buffer, unsigned int sz){
     }
 
     if(ctx_io->flag < 8){
-        printf("Je suis dans le cas d'une lecture defichier chiffre, je skip le IV\n");
         fseek(f, 16, SEEK_SET);
         bytesRead = fread(buffer, 1, sz, f);
 
@@ -64,6 +61,12 @@ int lire_all_data(contexte_io* ctx_io, unsigned char* buffer, unsigned int sz){
 }
 
 unsigned int data_size(contexte_io* ctx_io){
+    
+    if((ctx_io->flag & 0x2) == 0x2){
+        printf("La fonction data_size ne peut pas être utilisé sur un fichier en écriture\n");
+        return 0;
+    }
+    
     FILE* fp = fopen(ctx_io->filename, "r"); 
   
     // checking if the file exist or not 
@@ -71,7 +74,7 @@ unsigned int data_size(contexte_io* ctx_io){
         printf("File Not Found!\n"); 
         return -1; 
     } 
-  
+
     fseek(fp, 0L, SEEK_END); 
   
     // calculating the size of the file 
@@ -80,8 +83,13 @@ unsigned int data_size(contexte_io* ctx_io){
     // closing the file 
     fclose(fp); 
     
-    printf("Size of the file : %i\n", res);
-    return res; 
+    if((ctx_io->flag & 0x4) == 0x4){
+        return res - 16;
+    } else if((ctx_io->flag & 0x8) == 0x8){
+        return res;
+    } else{
+        return -1;
+    }
 
 }
 
@@ -89,12 +97,9 @@ unsigned int data_size(contexte_io* ctx_io){
 int lire_iv(contexte_io* ctx_io, unsigned char* iv, unsigned int* iv_sz){
 
     FILE *stream = fopen(ctx_io->filename, "r" );
-    printf("filename where trying to read IV : %s\n", ctx_io->filename);
     if(  stream != NULL ){
-      // Attempt to read in 25 characters
       int numread = fread( iv, 1, *iv_sz, stream );
-      //printf( "Number of items read = %d\n", numread );
-      //printf( "Contents of buffer = %.25s\n", iv );
+      
       
       fclose( stream );
       
@@ -105,12 +110,6 @@ int lire_iv(contexte_io* ctx_io, unsigned char* iv, unsigned int* iv_sz){
       exit(-1);
 
    }
-   printf("size of iv_sz = %i\n", *iv_sz);
-   printf("IV: ");
-      for (int i = 0; i < *iv_sz ; i++) {
-          printf("%02x", iv[i]);
-      }
-      printf("\n");
       
 }
 
@@ -119,14 +118,9 @@ int ecrire_iv(contexte_io* ctx_io, unsigned char* iv, unsigned int iv_sz){
     FILE *stream = fopen(ctx_io->filename, "w");
     
     if (stream != NULL){
-        printf("IV: ");
-        for (int i = 0; i < iv_sz ; i++) {
-            printf("%02x", iv[i]);
-        }
-        printf("\n");
+        
         int numwrite = fwrite(iv, sizeof(char), iv_sz, stream);
-        printf( "Number of items written iv in crypto file = %d\n", numwrite );
-        //printf( "Contents of buffer iv in crypto file = %s\n", iv );
+        
         
     } else {
         printf( "File could not be opened\n" );
