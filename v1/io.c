@@ -21,42 +21,40 @@ int preparer_ctx_io(contexte_io* ctx_io, char* filename, int flag){
 }
 
 int lire_all_data(contexte_io* ctx_io, unsigned char* buffer, unsigned int sz){
-    /*
-    FILE* fichier = NULL;
-    printf("Ouverture du fichier\n");
-    fichier = fopen(ctx_io->filename, "r");
-
-    if(fichier!=NULL){
-        printf("Lecture du fichier\n");
-        while (fgets(buffer, sz, fichier) != NULL)
-        {
-            printf("%s", buffer);
-        }
-
-    } else{
-        printf("Erreur à la lecture du fichier\n");
-
-        return 0;
-    }
-    fclose(fichier);
-    return 0;
-    */
+    
 
    FILE *f = fopen(ctx_io->filename, "r");
+   size_t bytesRead;
 
     if (f == NULL) {
         perror("Erreur lors de l'ouverture du fichier");
         return -1;
     }
 
-    // Lecture du contenu du fichier dans le tampon
-    size_t bytesRead = fread(buffer, 1, sz, f);
+    if(ctx_io->flag < 8){
+        printf("Je suis dans le cas d'une lecture defichier chiffre, je skip le IV\n");
+        fseek(f, 16, SEEK_SET);
+        bytesRead = fread(buffer, 1, sz, f);
 
-    if (bytesRead == 0) {
-        perror("Erreur lors de la lecture du fichier");
-        fclose(f);
-        return -1;
+        if (bytesRead == 0) {
+            perror("Erreur lors de la lecture du fichier");
+            fclose(f);
+            return -1;
+        }
+
+    } else{
+        // Lecture du contenu du fichier dans le tampon
+        bytesRead = fread(buffer, 1, sz, f);
+
+        if (bytesRead == 0) {
+            perror("Erreur lors de la lecture du fichier");
+            fclose(f);
+            return -1;
+        }
+
     }
+
+    
 
     // Fermeture du fichier
     fclose(f);
@@ -64,7 +62,6 @@ int lire_all_data(contexte_io* ctx_io, unsigned char* buffer, unsigned int sz){
     return bytesRead;
     
 }
-
 
 unsigned int data_size(contexte_io* ctx_io){
     FILE* fp = fopen(ctx_io->filename, "r"); 
@@ -120,6 +117,7 @@ int lire_iv(contexte_io* ctx_io, unsigned char* iv, unsigned int* iv_sz){
 
 int ecrire_iv(contexte_io* ctx_io, unsigned char* iv, unsigned int iv_sz){
     FILE *stream = fopen(ctx_io->filename, "w");
+    
     if (stream != NULL){
         printf("IV: ");
         for (int i = 0; i < iv_sz ; i++) {
@@ -128,11 +126,14 @@ int ecrire_iv(contexte_io* ctx_io, unsigned char* iv, unsigned int iv_sz){
         printf("\n");
         int numwrite = fwrite(iv, sizeof(char), iv_sz, stream);
         printf( "Number of items written iv in crypto file = %d\n", numwrite );
-        printf( "Contents of buffer iv in crypto file = %s\n", iv );
-        fclose( stream );
+        //printf( "Contents of buffer iv in crypto file = %s\n", iv );
+        
     } else {
         printf( "File could not be opened\n" );
     }
+    
+    fclose( stream );
+    return 0;
 
 }
 
@@ -140,18 +141,11 @@ int ecrire_iv(contexte_io* ctx_io, unsigned char* iv, unsigned int iv_sz){
 int ecrire_all_data(contexte_io* ctx_io, unsigned char* buffer, unsigned int sz){
     FILE *stream = fopen(ctx_io->filename, "a");
     if (stream != NULL){
-        if (fseek(stream, 0, SEEK_END) != 0) {
-            perror("Erreur lors du positionnement du curseur");
-            fclose(stream);
-            return -1;
-    }
         int numwrite = fwrite(buffer, sizeof(char), sz, stream);
-        printf( "Number of items written in crypto file = %d\n", numwrite );
-        printf( "Contents of buffer crypto = %.25s\n", buffer );
-        fclose(stream);
+        
     } else {
         printf( "File could not be opened\n" );
     }
-
+    fclose(stream);
     return 0;
 }

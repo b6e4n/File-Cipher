@@ -46,6 +46,9 @@ int chiffrer_all_data(contexte_cry* ctx_cry, unsigned char* buffer_plain, unsign
     unsigned int k_sz = ctx_cry->key_sz;
     unsigned int iv_sz = ctx_cry->iv_sz;
 
+    unsigned char * padded_buffer_plain;
+    unsigned char * iv_copy;
+
     size_t buffer_size = sizeof(buffer_plain);
 
     printf("Size of the buffer_plain just before encryption in bytes: %zu\n", buffer_size);
@@ -54,7 +57,7 @@ int chiffrer_all_data(contexte_cry* ctx_cry, unsigned char* buffer_plain, unsign
     --> Dans l'exemple mbedtls, le padding est fait à 48
     --> il va falloir ajouter 0x80 et des 0 à la fin pour avoir une tailler de 128
     */
-
+   /*
     unsigned char* padded_buffer = (unsigned char*)malloc(0x80);
     if (padded_buffer == NULL) {
         printf("Memory allocation failed.\n");
@@ -63,8 +66,30 @@ int chiffrer_all_data(contexte_cry* ctx_cry, unsigned char* buffer_plain, unsign
     memcpy(padded_buffer, buffer_plain, buffer_plain_sz);
     memset(padded_buffer + buffer_plain_sz, 0x80, 0x80 - buffer_plain_sz);
     memset(padded_buffer + buffer_plain_sz + 1, 0, 0x80 - buffer_plain_sz - 1);
-    size_t buffer_size_2 = sizeof(padded_buffer);
+    */
 
+   int padding = 16 - (buffer_plain_sz % 16);
+   padded_buffer_plain = (unsigned char*) malloc(*buffer_crypto_sz);
+
+   if (padded_buffer_plain != NULL) {
+        printf("buffer_plain_sz : %i\n", buffer_plain_sz);
+        // Copy the first 16 bytes from source_data to destination_data
+        memcpy(padded_buffer_plain, buffer_plain, buffer_plain_sz);
+
+        // Set the 16th byte to 0x80
+        padded_buffer_plain[buffer_plain_sz] = 0x80;
+
+        // Fill the remaining bytes in destination_data with null bytes using a for loop
+        for (int i = buffer_plain_sz; i < padding; i++) {
+            padded_buffer_plain[i] = 0;
+        }
+        printf("padded_buffer_plain : %s\n", padded_buffer_plain);
+        // Now, destination_data contains the first 16 bytes of source_data with the 16th byte set to 0x80 and the rest filled with null bytes
+
+        // You can use destination_data as needed
+    }
+    size_t buffer_size_2 = sizeof(padded_buffer_plain);
+/*
     printf("Size of the buffer_padded just before encryption in bytes: %zu\n", buffer_size_2);
     
     printf("PADDED BUFFER CLAIR: ");
@@ -79,18 +104,55 @@ int chiffrer_all_data(contexte_cry* ctx_cry, unsigned char* buffer_plain, unsign
     }
     printf("\n");
     printf("\n");
+    */
+
+   printf("INSIDE CHIFFRMEENT b4iv size : %i\n", iv_sz);
+        printf("INSIDE CHIFFREMENT b4 IV: ");
+        for (int i = 0; i < iv_sz ; i++) {
+            printf("%02x", iv[i]);
+        }
+        printf("\n");
+        iv_copy = (unsigned char *) malloc(16);
+    memcpy(iv_copy, iv, iv_sz);
     mbedtls_aes_context aes;
     mbedtls_aes_setkey_enc( &aes, key, 256 );
-    mbedtls_aes_crypt_cbc( &aes, MBEDTLS_AES_ENCRYPT, 0x80, iv, padded_buffer, buffer_crypto );
+    mbedtls_aes_crypt_cbc( &aes, MBEDTLS_AES_ENCRYPT, *buffer_crypto_sz, iv, padded_buffer_plain, buffer_crypto );
     //buffer_plain = padded_buffer;
+    printf("INSIDE CHIFFRMEENT afeter iv size : %i\n", iv_sz);
+        printf("INSIDE CHIFFREMENT after IV: ");
+        for (int i = 0; i < iv_sz ; i++) {
+            printf("%02x", iv[i]);
+        }
+        printf("\n");
+    printf("INSIDE CHIFFRMEENT afeter ctx-cry iv size : %i\n", ctx_cry->iv_sz);
+        printf("INSIDE CHIFFREMENT after ctx-cry IV: ");
+        for (int i = 0; i < ctx_cry->iv_sz ; i++) {
+            printf("%02x", ctx_cry->iv[i]);
+        }
+        printf("\n");
 
+        printf("INSIDE CHIFFRMEENT afeter iv_copy size : %i\n", ctx_cry->iv_sz);
+        printf("INSIDE CHIFFREMENT after iv_copy IV: ");
+        for (int i = 0; i < ctx_cry->iv_sz ; i++) {
+            printf("%02x", iv_copy[i]);
+        }
+        printf("\n");
+    
     printf("CHIFFRE: ");
-    for (int i = 0; i < 128 ; i++) {
-        printf("%c", buffer_crypto[i]);
+    for (int i = 0; i < *buffer_crypto_sz ; i++) {
+        printf("%02x", buffer_crypto[i]);                     
     }
     printf("\n");
     printf("longueur chiffre %i\n", strlen(buffer_crypto));
+    
     mbedtls_aes_free(&aes);
+    ctx_cry->iv = iv_copy;
+    printf("INSIDE CHIFFRMEENT COPYYY afeter iv_copy size : %i\n", ctx_cry->iv_sz);
+        printf("INSIDE CHIFFREMENT COPYYYY after iv_copy IV: ");
+        for (int i = 0; i < ctx_cry->iv_sz ; i++) {
+            printf("%02x", ctx_cry->iv[i]);
+        }
+        printf("\n");
     return 0;
 }
 
@@ -105,20 +167,42 @@ la fonction retourne un code d’erreur et *buffer_plain_sz vaut 0
 */
 int dechiffrer_all_data(contexte_cry* ctx_cry, unsigned char* buffer_plain, unsigned int *buffer_plain_sz, unsigned char* buffer_crypto, unsigned int buffer_crypto_sz){
     mbedtls_aes_context aes_ctx;
-    unsigned char key = ctx_cry->key; // 128-bit AES key
-    unsigned char iv = ctx_cry->iv;  // 128-bit IV
-
+    unsigned char *key = ctx_cry->key; 
+    unsigned char *iv = ctx_cry->iv;
+    printf("B4 DECRYPT IV: ");
+    for (int i = 0; i < 16 ; i++) {
+        printf("%02x", iv[i]);
+    }
+    printf("\n");
+    printf("B4 DECRYPT KEY: ");
+    for (int j = 0; j < 32 ; j++) {
+        printf("%02x", key[j]);
+    }
+    printf("\n");
+    printf("\n");
+    printf("B4 DECRYPT CHIFFRE: ");
+    for (int i = 0; i < 128 ; i++) {
+        printf("%c", buffer_crypto[i]);
+    }
+    printf("\n");
+    printf("B4 DECRYPT longueur chiffre %i\n", strlen(buffer_crypto));
+    printf("valeurde buffer_crypto_sz : %i\n", buffer_crypto_sz);
     mbedtls_aes_init(&aes_ctx);
 
     // Set the decryption key
-    mbedtls_aes_setkey_dec(&aes_ctx, key, 128);
+    mbedtls_aes_setkey_dec(&aes_ctx, key, 256);
 
     // Perform decryption
-    mbedtls_aes_crypt_cbc(&aes_ctx, MBEDTLS_AES_DECRYPT, buffer_plain_sz, iv, buffer_crypto, buffer_plain);
+    mbedtls_aes_crypt_cbc(&aes_ctx, MBEDTLS_AES_DECRYPT, buffer_crypto_sz, iv, buffer_crypto, buffer_plain);
 
     // Clean up the AES context
     mbedtls_aes_free(&aes_ctx);
 
-    printf("Buffer déchiffré : %s\n", buffer_plain);
+    printf("DECHIFFRE: ");
+    for (int i = 0; i < 128 ; i++) {
+        printf("%c", buffer_plain[i]);
+    }
+    printf("\n");
+    printf("longueur dechiffre %i\n", strlen(buffer_plain));
     return 0;
 }

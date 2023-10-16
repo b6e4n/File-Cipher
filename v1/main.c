@@ -38,7 +38,7 @@ variables
     unsigned char* buffer_plain = NULL;
     unsigned int p_sz = 0;
     unsigned char* buffer_crypto = NULL;
-    unsigned int c_sz = 0x80;
+    unsigned int c_sz = 0;
     contexte_io* io_crypto = NULL;
     contexte_io* io_plain = NULL;
     contexte_cry* cry = NULL;
@@ -90,12 +90,7 @@ variables
         printf("\n");
 
         construire_clef(password, strlen(password), key, &k_sz);
-        printf("key size : %i\n", k_sz);
-        printf("KEY: ");
-        for (int i = 0; i < k_sz ; i++) {
-            printf("%02x", key[i]);
-        }
-        printf("\n");
+        
 
         cry = creer_ctx_cry();
         preparer_ctx_cry(cry, key, k_sz, iv, iv_sz);
@@ -112,6 +107,7 @@ variables
         }
         printf("\n");
 
+
         io_crypto = creer_ctx_io();
         preparer_ctx_io(io_crypto, output, ECRITURE|CRYPTO);
         printf("filename crypto : %s\n", io_crypto->filename);
@@ -121,59 +117,69 @@ variables
         printf("size of the plain file : %i\n", p_sz);
 
         buffer_plain = (unsigned char*) malloc(p_sz);
-        buffer_crypto = (unsigned char*) malloc(p_sz);
 
+        c_sz = (p_sz / 16) * 16 + 16;
+        printf("size_of_encrypted_block c_sz : %i\n", c_sz);
+        buffer_crypto = (unsigned char*) malloc(c_sz);
+        printf("la taille du chiffre va etre de %i\n", c_sz);
         lire_all_data(io_plain, buffer_plain, p_sz);
-        printf("buffer plain : %s\n", buffer_plain);
+        //printf("buffer plain : %s\n", buffer_plain);
 
         chiffrer_all_data(cry, buffer_plain, p_sz, buffer_crypto, &c_sz);
-        printf("length p_sz : %i\n", p_sz);
-        printf("length c_sz : %i\n", c_sz);
-        printf("buffer plain : %s\n", buffer_plain);
-        printf("buffer crypto : %s\n", buffer_crypto);
-
-        printf("the iv that I have to write : %s\n", iv);
-        ecrire_iv(io_crypto, iv, iv_sz);
-        
-        ecrire_all_data(io_crypto, buffer_crypto, c_sz);
-
-//test de lecture du fichier chiffre
-        FILE *file = fopen(io_crypto->filename, "r");
-        if (file == NULL) {
-            perror("Error opening the file");
-            return 1;
-        }
-        fseek(file, 0, SEEK_END);
-        long file_size = ftell(file);
-        fseek(file, 0, SEEK_SET);
-
-        if (file_size < 0) {
-            perror("Error getting file size");
-            fclose(file);
-            return 1;
-        }
-        char *buffer = (char *)malloc(file_size + 1);
-        if (buffer == NULL) {
-            perror("Memory allocation failed");
-            fclose(file);
-            return 1;
-        }
-        size_t bytes_read = fread(buffer, 1, file_size, file);
-        if (bytes_read != file_size) {
-            perror("Error reading the file");
-            free(buffer);
-            fclose(file);
-            return 1;
-        }
-        buffer[file_size] = '\0';
-        printf("FICHIER CHIFFRE : ");
-        for (int i = 0; i < bytes_read ; i++) {
-            printf("%02x", buffer[i]);
+        printf("AFTER E?CRYPT buffer_crypto : ");
+        for (int i = 0; i < c_sz ; i++) {
+            printf("%02x", buffer_crypto[i]);
         }
         printf("\n");
-        free(buffer);
-        fclose(file);
+        printf("length p_sz : %i\n", p_sz);
+        printf("length c_sz : %i\n", c_sz);
+        //printf("buffer plain : %s\n", buffer_plain);
+        //printf("buffer crypto : %s\n", buffer_crypto);
 
+        //printf("the iv that I have to write : %s\n", iv);
+        printf("B4 WRITE iv : ");
+        for (int i = 0; i < cry->iv_sz ; i++) {
+            printf("%02x", cry->iv[i]);
+        }
+        printf("\n");
+        ecrire_iv(io_crypto, cry->iv, cry->iv_sz);
+        
+        printf("B4 WRITE buffer_crypto : ");
+        for (int i = 0; i < c_sz ; i++) {
+            printf("%02x", buffer_crypto[i]);
+        }
+        printf("\n");
+        ecrire_all_data(io_crypto, buffer_crypto, c_sz);
+        
+
+//test de lecture du fichier chiffre
+        FILE *file;
+    long file_length;
+
+    // Open the file for reading (change "your_file.txt" to the actual file name)
+    file = fopen(io_crypto->filename, "r");
+
+    if (file == NULL) {
+        printf("File not found or cannot be opened.\n");
+        return 1;
+    }
+
+    // Seek to the end of the file
+    fseek(file, 0, SEEK_END);
+
+    // Get the current file position, which is the file length
+    file_length = ftell(file);
+
+    if (file_length == -1) {
+        printf("Error getting file length.\n");
+    } else {
+        printf("File length: %ld bytes\n", file_length);
+    }
+
+    // Close the file
+    fclose(file);
+
+        
         detruire_ctx_cry(cry);
         detruire_ctx_io(io_plain);
         detruire_ctx_io(io_crypto);
@@ -219,7 +225,7 @@ variables
         preparer_ctx_io(io_plain, output, ECRITURE|PLAIN);
         printf("IO plain filename : %s\n", io_plain->filename);
 
-        c_sz = data_size(io_crypto);
+        c_sz = data_size(io_crypto) - 16;
         printf("Size of c_sz : %i\n", c_sz);
 
         buffer_crypto = (unsigned char*) malloc(c_sz);
@@ -227,7 +233,13 @@ variables
 
 //lire all data et proceder au dechiffrement maintenant
         lire_all_data(io_crypto, buffer_crypto, c_sz);
-        
+        printf("B4 DECRYPT buffer_crypto : ");
+        for (int i = 0; i < c_sz ; i++) {
+            printf("%c", buffer_crypto[i]);
+        }
+        printf("\n");
+        printf("B4 DECRYPT c_sz %i\n", c_sz);
+        dechiffrer_all_data(cry, buffer_plain, &p_sz, buffer_crypto, c_sz);
 
         detruire_ctx_cry(cry);
         detruire_ctx_io(io_crypto);
