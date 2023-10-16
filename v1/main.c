@@ -27,9 +27,8 @@ void print_usage(){
 int main(int argc, char *argv[]) {
     
 
-    /*
-variables
-*/
+    /*variables*/
+
     unsigned char iv[16];
     unsigned int iv_sz = 16;
     unsigned char key[32];
@@ -46,8 +45,10 @@ variables
     int chiffrement = -1, dechiffrement = -1;
     char *password = NULL, *input = NULL, *output = NULL;
 
-    while ((opt = getopt(argc, argv,"cdp:i:o:")) != -1) {
+    while ((opt = getopt(argc, argv,"hcdp:i:o:")) != -1) {
         switch (opt) {
+            case 'h' : print_usage();
+                exit(-1);
              case 'c' : chiffrement = 0;
                  break;
              case 'd' : dechiffrement = 0;
@@ -74,27 +75,22 @@ variables
         io_plain = creer_ctx_io();
         preparer_ctx_io(io_plain, input, LECTURE|PLAIN);
         
-
         generer_iv(iv, iv_sz);
         
-
         construire_clef(password, strlen(password), key, &k_sz);
         
-
         cry = creer_ctx_cry();
         preparer_ctx_cry(cry, key, k_sz, iv, iv_sz);
         
-
-
         io_crypto = creer_ctx_io();
         preparer_ctx_io(io_crypto, output, ECRITURE|CRYPTO);
 
         p_sz = data_size(io_plain);
-
         buffer_plain = (unsigned char*) malloc(p_sz);
 
         c_sz = (p_sz / 16) * 16 + 16;
         buffer_crypto = (unsigned char*) malloc(c_sz);
+
         lire_all_data(io_plain, buffer_plain, p_sz);
 
         chiffrer_all_data(cry, buffer_plain, p_sz, buffer_crypto, &c_sz);
@@ -102,8 +98,6 @@ variables
         ecrire_iv(io_crypto, cry->iv, cry->iv_sz);
         
         ecrire_all_data(io_crypto, buffer_crypto, c_sz);
-        
-
 
         detruire_ctx_cry(cry);
         detruire_ctx_io(io_plain);
@@ -115,26 +109,25 @@ variables
         
         io_crypto = creer_ctx_io();
         preparer_ctx_io(io_crypto, input, LECTURE|CRYPTO);
+
         construire_clef(password, strlen(password), key, &k_sz);
         
-
         lire_iv(io_crypto, iv, &iv_sz);
         
-
         cry = creer_ctx_cry();
         preparer_ctx_cry(cry, key, k_sz, iv, iv_sz);
         
-
         io_plain = creer_ctx_io();
         preparer_ctx_io(io_plain, output, ECRITURE|PLAIN);
 
         c_sz = data_size(io_crypto);
-
         buffer_crypto = (unsigned char*) malloc(c_sz);
         buffer_plain = (unsigned char*) malloc(c_sz);
 
         lire_all_data(io_crypto, buffer_crypto, c_sz);
+
         dechiffrer_all_data(cry, buffer_plain, &p_sz, buffer_crypto, c_sz);
+
         ecrire_all_data(io_plain, buffer_plain, p_sz);
 
         detruire_ctx_cry(cry);
@@ -142,8 +135,6 @@ variables
         detruire_ctx_io(io_plain);
         free(buffer_crypto);
         free(buffer_plain);
-
-    
         
     } else{
         print_usage();

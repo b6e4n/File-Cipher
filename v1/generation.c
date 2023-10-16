@@ -12,17 +12,11 @@ int generer_iv(unsigned char* iv, unsigned int sz){
 
     mbedtls_entropy_init(&entropy);
     mbedtls_ctr_drbg_init(&ctr_drbg);
-
-    // Seed the random number generator (you can customize the personalization string)
     mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0);
-    
-
     mbedtls_ctr_drbg_random(&ctr_drbg, iv, sz);
-
-    // Use 'iv' for AES-CBC encryption
-
     mbedtls_ctr_drbg_free(&ctr_drbg);
     mbedtls_entropy_free(&entropy);
+    
     return 0;
 
 }
