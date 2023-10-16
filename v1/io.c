@@ -112,7 +112,7 @@ int ecrire_iv(contexte_io* ctx_io, unsigned char* iv, unsigned int iv_sz){
     int numwrite = 0;
     FILE *f = fopen(ctx_io->filename, "w");
     if (f != NULL){
-        numwrite = fwrite(iv, sizeof(char), iv_sz, f);  
+        numwrite = fwrite(iv, sizeof(char), iv_sz, f);
 
     } else {
         printf( "Le fichier %s n'a pu être ouvert, vérifier son existence\n", ctx_io->filename );
