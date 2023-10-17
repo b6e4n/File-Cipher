@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
 contexte_io* creer_ctx_io(){
 
     contexte_io * io_crypto = malloc(sizeof(contexte_io));
