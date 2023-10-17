@@ -18,7 +18,7 @@ Exemple d'utilisation :
 - Chiffrement   --> protect -c -p motdepasse -i fichier_clair.txt -o fichier_chiffre.bin
 - Déchiffrement --> protect -d -p motdepasse -i fichier_chiffre.bin -o fichier_chiffre.txt
 
-L'aide peut être affiché via l'option -h : protect -h
+L'aide peut être affichée via l'option -h : protect -h
 
 
 ## Bug observé
