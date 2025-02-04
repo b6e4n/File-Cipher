@@ -4,9 +4,9 @@ CFLAGS = -Wall -O2
 MBEDTLS_INC = .
 MBEDTLS_LIB = library
 
-all: protect
+all: cipher
 
-protect: main.o generation.o clef.o chiffre.o io.o
+cipher: main.o generation.o clef.o chiffre.o io.o
 	$(CC) $(CFLAGS) -o protect main.o generation.o clef.o chiffre.o io.o -L$(MBEDTLS_LIB) -lmbedtls -lmbedcrypto -lmbedx509
 
 main.o: main.c
