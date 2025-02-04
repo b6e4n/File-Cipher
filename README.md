@@ -22,5 +22,5 @@ Example usage:
 
 Help can be displayed using the -h option:
 ```sh
-protect -h  
+cipher -h  
 ```
